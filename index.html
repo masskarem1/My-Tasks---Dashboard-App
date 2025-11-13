@@ -678,6 +678,14 @@
             margin-left: 10px;
             padding: 0;
         }
+        
+        /* AI Error Modal */
+        #ai-error-modal .modal-btn {
+            background: var(--accent-blue);
+            color: white;
+            width: 100%;
+        }
+
 
         @media (max-width: 600px) {
             .app-container {
@@ -850,6 +858,15 @@
             <button class="modal-btn" id="profile-save-btn">Save</button>
         </div>
     </div>
+    
+    <!-- ===== MODAL POPUP: AI Error ===== -->
+    <div class="modal-overlay" id="ai-error-modal">
+        <div class="modal-popup">
+            <h3>AI Error</h3>
+            <p id="ai-error-message">AI request failed. Please check your connection or the proxy.</p>
+            <button class="modal-btn" id="ai-error-ok-btn">OK</button>
+        </div>
+    </div>
 
 
     <script>
@@ -921,7 +938,12 @@
                 profileTitle: document.getElementById('profile-title'),
                 profileNameInput: document.getElementById('profile-name-input'),
                 profileEmailInput: document.getElementById('profile-email-input'),
-                profileSaveBtn: document.getElementById('profile-save-btn')
+                profileSaveBtn: document.getElementById('profile-save-btn'),
+                
+                // AI Error Modal
+                aiErrorModal: document.getElementById('ai-error-modal'),
+                aiErrorMessage: document.getElementById('ai-error-message'),
+                aiErrorOkBtn: document.getElementById('ai-error-ok-btn')
             };
             
             // --- Category Colors ---
@@ -980,7 +1002,7 @@
 
             function saveData() {
                 localStorage.setItem('tasks_v2', JSON.stringify(app.tasks));
-                localStorage.setItem('categories_v3', JSON.stringify(app.categories));
+                localStorage.setItem('tasks_categories_v3', JSON.stringify(app.categories));
                 localStorage.setItem('tasks_user_v2', JSON.stringify(app.user));
                 localStorage.setItem('darkMode_v2', app.darkMode);
             }
@@ -1245,6 +1267,12 @@
                 els.profileSaveBtn.addEventListener('click', saveProfile);
                 els.profileModal.addEventListener('click', (e) => {
                     if(e.target === els.profileModal) hideProfileModal();
+                });
+                
+                // AI Error
+                els.aiErrorOkBtn.addEventListener('click', () => els.aiErrorModal.classList.remove('active'));
+                els.aiErrorModal.addEventListener('click', (e) => {
+                    if(e.target === els.aiErrorModal) els.aiErrorModal.classList.remove('active');
                 });
             }
 
@@ -1557,7 +1585,7 @@
                     if (taskTime && taskTime > now && taskTime <= fifteenMinutesFromNow) {
                         new Notification('Upcoming Task!', {
                             body: `Your task "${task.text}" is due soon.`,
-                            icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9IiM2NjdlZWEiPjxwYXRoIGQ9Ik0yMCAxM0gxMmE2IDYgMCAwIDAtNiA2djFhMSAxIDAgMCAwIDEgMWgxMGExIDEgMCAwIDAgMS0xdi0xYTYgNiAwIDAgMC02LTZoLTRhNCA0IDAgMCAxIDAtOGg4YTQgNCAwIDAgMSAwIDhaTTQgMjJoMTZhMSAxIDAgMCAwIC44LS40bDMtNGExIDEgMCAwIDAtLjgtMS42SDhhMSAxIDAgMCAwIDAgMmgyLjRsLTEuMiAxLjZBMSAxIDAgMCAwIDkgMjJoMS4xbDQuNDUtNC40NUEyIDIgMCAxIDEgMTIgMThhMiAyIDAgMCAxIDAgNEg4YTEgMSAwIDAgMCAwIDJoMTJ6TTEyIDhhMSAxIDAgMSAwIDAgMiAxIDEgMCAwIDAgMC0yWm02LTMhMiAyIDAgMSAwIDAgNGEyIDIgMCAwIDAgMC00Wk02IDVhMiAyIDAgMSAwIDAgNGEyIDIgMCAwIDAgMC00WiIvPjwvc3ZnPg=='
+                            icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMjU2IiB2aWV3Qm94PSIwIDAgMjQgMjQiIGZpbGw9IiM2NjdlZWEiPjxwYXRoIGQ9Ik0yMCAxM0gxMmE2IDYgMCAwIDAtNiA2djFhMSAxIDAgMCAwIDEgMWgxMGExIDEgMCAwIDAgMS0xdi0xYTYgNiAwIDAgMC02LTZoLTRhNCA0IDAgMCAxIDAtOGg4YTQgNCAwIDAgMSAwIDhaTTQgMjJoMTZhMSAxIDAgMCAwIC44LS40bDMtNGExIDEgMCAwIDAtLjgtMS42SDhhMSAxIDAgMCAwIDAgMmgyLjRsLTEuMiAxLjZBMSAxIDAgMCAwIDkgMjJoMS4xbDQuNDUtNC44NUEyIDIgMCAxIDEgMTIgMThhMiAyIDAgMCAxIDAgNEg4YTEgMSAwIDAgMCAwIDJoMTJ6TTEyIDhhMSAxIDAgMSAwIDAgMiAxIDEgMCAwIDAgMC0yWm02LTMhMiAyIDAgMSAwIDAgNGEyIDIgMCAwIDAgMC00Wk02IDVhMiAyIDAgMSAwIDAgNGEyIDIgMCAwIDAgMC00WiIvPjwvc3ZnPg=='
                         });
                         task.notified = true;
                     }
@@ -1572,6 +1600,7 @@
              */
             async function checkIfAiReady() {
                 try {
+                    // Simple GET request to check if the proxy is alive
                     const response = await fetch(app.aiProxyUrl);
                     if (response.ok) {
                         app.aiReady = true;
@@ -1605,7 +1634,7 @@
                     The available categories are: [${categoryList}, Other].
                     - text: The core task text.
                     - date: In YYYY-MM-DD format. Infer "tomorrow", "next Friday", etc.
-                    - time: In HH:mm format.
+                    - time: In HH:mm format (24-hour).
                     - priority: "low", "medium", or "high".
                     - category: Must be one of the available categories. Default to "Personal Notes".
                     
@@ -1630,14 +1659,22 @@
                         
                     } catch (e) {
                         console.error('Failed to parse AI JSON:', e);
-                        alert('AI response was not in the correct format.');
+                        showAiError('AI response was not in the correct format.');
                     }
                 } else {
-                    alert('AI request failed. Please check your connection or the proxy.');
+                    showAiError('AI request failed. Please check your connection or the proxy.');
                 }
                 
                 els.smartFillBtn.disabled = false;
                 els.smartFillBtn.textContent = '✨ Smart Fill';
+            }
+            
+            /**
+             * Shows the AI Error modal with a custom message.
+             */
+            function showAiError(message) {
+                els.aiErrorMessage.textContent = message;
+                els.aiErrorModal.classList.add('active');
             }
 
             /**
@@ -1652,8 +1689,9 @@
                 try {
                     const response = await fetch(app.aiProxyUrl, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        // FIX: Change content type to text/plain to avoid CORS preflight
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify(payload) // Send as text
                     });
 
                     if (!response.ok) {
