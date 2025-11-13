@@ -282,19 +282,19 @@
         
         /* Assign category colors */
         .category-card[data-color-index="0"] { background-color: var(--cat-1-bg); }
-        .category-card[data-color-index="0"] h3 { color: var(--cat-1-text); }
+        .category-card[data-color-index="0"] h3, .category-card[data-color-index="0"] .category-info p, .category-card[data-color-index="0"] .category-stats span { color: var(--cat-1-text); }
         .category-card[data-color-index="1"] { background-color: var(--cat-2-bg); }
-        .category-card[data-color-index="1"] h3 { color: var(--cat-2-text); }
+        .category-card[data-color-index="1"] h3, .category-card[data-color-index="1"] .category-info p, .category-card[data-color-index="1"] .category-stats span { color: var(--cat-2-text); }
         .category-card[data-color-index="2"] { background-color: var(--cat-3-bg); }
-        .category-card[data-color-index="2"] h3 { color: var(--cat-3-text); }
+        .category-card[data-color-index="2"] h3, .category-card[data-color-index="2"] .category-info p, .category-card[data-color-index="2"] .category-stats span { color: var(--cat-3-text); }
         .category-card[data-color-index="3"] { background-color: var(--cat-4-bg); }
-        .category-card[data-color-index="3"] h3 { color: var(--cat-4-text); }
+        .category-card[data-color-index="3"] h3, .category-card[data-color-index="3"] .category-info p, .category-card[data-color-index="3"] .category-stats span { color: var(--cat-4-text); }
         .category-card[data-color-index="4"] { background-color: var(--cat-5-bg); }
-        .category-card[data-color-index="4"] h3 { color: var(--cat-5-text); }
+        .category-card[data-color-index="4"] h3, .category-card[data-color-index="4"] .category-info p, .category-card[data-color-index="4"] .category-stats span { color: var(--cat-5-text); }
         .category-card[data-color-index="5"] { background-color: var(--cat-6-bg); }
-        .category-card[data-color-index="5"] h3 { color: var(--cat-6-text); }
+        .category-card[data-color-index="5"] h3, .category-card[data-color-index="5"] .category-info p, .category-card[data-color-index="5"] .category-stats span { color: var(--cat-6-text); }
         .category-card[data-color-index="6"] { background-color: var(--cat-7-bg); }
-        .category-card[data-color-index="6"] h3 { color: var(--cat-7-text); }
+        .category-card[data-color-index="6"] h3, .category-card[data-color-index="6"] .category-info p, .category-card[data-color-index="6"] .category-stats span { color: var(--cat-7-text); }
 
 
         /* --- Task List (Used by Dashboard & Task Page) --- */
@@ -531,8 +531,8 @@
             margin-bottom: 0; /* Override default */
         }
         #modal-add-subtask-btn {
-            padding: 10px;
-            font-size: 1em;
+            padding: 10px 15px; /* Added more padding */
+            font-size: 1.1em; /* Made button slightly larger */
             flex-shrink: 0;
             background: var(--accent-green); /* Green from image */
             color: white;
@@ -686,6 +686,33 @@
             width: 100%;
         }
 
+        /* Date Input Placeholder Fix */
+        .date-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .date-input-wrapper::before {
+            content: 'mm/dd/yyyy';
+            position: absolute;
+            left: 15px;
+            color: var(--text-secondary);
+            pointer-events: none;
+            font-size: 1.2em;
+        }
+        .date-input-wrapper input[type="date"] {
+            flex-grow: 1;
+        }
+        .date-input-wrapper input[type="date"].has-value::before {
+            display: none; /* Hide placeholder if has value */
+        }
+        .date-input-wrapper input[type="date"]:not(.has-value)::-webkit-datetime-edit-text,
+        .date-input-wrapper input[type="date"]:not(.has-value)::-webkit-datetime-edit-month-field,
+        .date-input-wrapper input[type="date"]:not(.has-value)::-webkit-datetime-edit-day-field,
+        .date-input-wrapper input[type="date"]:not(.has-value)::-webkit-datetime-edit-year-field {
+            color: transparent; /* Hide native text */
+        }
+
 
         @media (max-width: 600px) {
             .app-container {
@@ -693,6 +720,9 @@
             }
             .modal-grid {
                 grid-template-columns: 1fr;
+            }
+            .date-input-wrapper::before {
+                font-size: 16px; /* Match mobile font size */
             }
         }
 
@@ -824,7 +854,10 @@
                 <div class="modal-grid">
                     <div>
                         <label for="modal-date" class="modal-label">Date</label>
-                        <input type="date" id="modal-date" class="modal-input">
+                        <!-- Date Input Wrapper for placeholder fix -->
+                        <div class="date-input-wrapper">
+                            <input type="date" id="modal-date" class="modal-input">
+                        </div>
                     </div>
                     <div>
                         <label for="modal-time" class="modal-label">Time</label>
@@ -885,7 +918,8 @@
                 notificationInterval: null,
                 activePage: 'page-dashboard',
                 previousPage: 'page-dashboard',
-                aiProxyUrl: 'https://script.google.com/macros/s/AKfycbxzKK4RKp0rpCZcznOYPyV4aWMhBZLqYSn_ZFyNe3EO6_MxPWHZ3laF1QGL6zk6E4-h/exec',
+                // Updated Proxy URL
+                aiProxyUrl: 'https://script.google.com/macros/s/AKfycbzDU3THyAzB8HeNqS0tSDwxIMhZD9lJ68PS1FRZ-HkbY9UrzA7uLm2TDK4SjFHSszQpUg/exec',
                 aiReady: false
             };
 
@@ -1274,6 +1308,11 @@
                 els.aiErrorModal.addEventListener('click', (e) => {
                     if(e.target === els.aiErrorModal) els.aiErrorModal.classList.remove('active');
                 });
+                
+                // Date Input Placeholder Fix Listener
+                els.modalDate.addEventListener('input', (e) => {
+                    e.target.classList.toggle('has-value', !!e.target.value);
+                });
             }
 
             // --- Page Navigation ---
@@ -1322,6 +1361,9 @@
                 els.modalDate.value = task.date || '';
                 els.modalTime.value = task.time || '';
                 
+                // Trigger class update for date placeholder
+                els.modalDate.classList.toggle('has-value', !!task.date);
+                
                 // Render sub-tasks
                 (task.subtasks || []).forEach(subtask => {
                     const li = createModalSubtaskElement(subtask);
@@ -1343,6 +1385,8 @@
                 els.modalTime.value = '';
                 els.modalSubtaskInput.value = '';
                 els.modalSubtaskList.innerHTML = '';
+                // Reset date placeholder class
+                els.modalDate.classList.remove('has-value');
             }
 
             function saveTaskFromModal() {
@@ -1657,6 +1701,9 @@
                         els.modalDate.value = data.date || '';
                         els.modalTime.value = data.time || '';
                         
+                        // Trigger class update for date placeholder
+                        els.modalDate.classList.toggle('has-value', !!data.date);
+                        
                     } catch (e) {
                         console.error('Failed to parse AI JSON:', e);
                         showAiError('AI response was not in the correct format.');
@@ -1681,17 +1728,29 @@
              * Calls the AI proxy to get a smart response.
              */
             async function getAiResponse(systemPrompt, userPrompt) {
+                // FIX: Format the request for x-www-form-urlencoded
                 const payload = {
-                    system: systemPrompt,
-                    prompt: userPrompt
+                    "contents": [{
+                        "parts": [
+                            { "text": systemPrompt },
+                            { "text": userPrompt }
+                        ]
+                    }],
+                    "generationConfig": {
+                        "responseMimeType": "application/json"
+                    }
                 };
 
+                // FIX: Use URLSearchParams to encode the payload
+                const encodedPayload = new URLSearchParams();
+                encodedPayload.append('payload', JSON.stringify(payload));
+                
                 try {
                     const response = await fetch(app.aiProxyUrl, {
                         method: 'POST',
-                        // FIX: Change content type to text/plain to avoid CORS preflight
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify(payload) // Send as text
+                        // FIX: Set the Content-Type to x-www-form-urlencoded
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: encodedPayload.toString() // Send the encoded string
                     });
 
                     if (!response.ok) {
@@ -1700,7 +1759,13 @@
                     }
 
                     const result = await response.json();
-                    return result.response;
+                    
+                    if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                        console.error("Invalid AI response structure:", result);
+                        return null;
+                    }
                     
                 } catch (error) {
                     console.error("Fetch Error:", error);
